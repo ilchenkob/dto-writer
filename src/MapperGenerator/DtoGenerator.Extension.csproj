@@ -56,7 +56,10 @@
   <ItemGroup>
     <Compile Include="CodeEditorCommand.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="Logic\CodeGenerator.cs" />
     <Compile Include="Logic\Constants.cs" />
+    <Compile Include="Logic\Interfaces\ICodeGenerator.cs" />
+    <Compile Include="Logic\Interfaces\ISingleFileProcessor.cs" />
     <Compile Include="Logic\PropertyMappers\ArrayPropertyMapper.cs" />
     <Compile Include="Logic\PropertyMappers\ClassPropertyMapper.cs" />
     <Compile Include="Logic\PropertyMappers\ListPropertyMapper.cs" />

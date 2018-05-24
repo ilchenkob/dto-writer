@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 using DtoGenerator.Logic;
+using DtoGenerator.Logic.Interfaces;
 using DtoGenerator.Logic.Models;
 
 namespace DtoGenerator.UI.ViewModels
@@ -14,17 +15,25 @@ namespace DtoGenerator.UI.ViewModels
   public class SingleFileDtoViewModel : BaseViewModel
   {
     private readonly Action<string> _dtoFileCreated;
-    private readonly SingleFileProcessor _fileProcessor;
-
-    public SingleFileDtoViewModel(string selectedFilePath, IEnumerable<string> allProjectSourcesExceptSelected, Action<string> onCreateCallback)
+    private readonly ISingleFileProcessor _fileProcessor;
+    private readonly ICodeGenerator _codeGenerator;
+    
+    public SingleFileDtoViewModel(
+      ISingleFileProcessor fileProcessor,
+      ICodeGenerator codeGenerator,
+      string selectedFilePath,
+      IEnumerable<string> allProjectSourcesExceptSelected,
+      Action<string> onCreateCallback)
     {
       var sourceFiles = allProjectSourcesExceptSelected.ToList();
 
       _dtoFileCreated = onCreateCallback;
-      _fileProcessor = new SingleFileProcessor();
+      _fileProcessor = fileProcessor;
+      _codeGenerator = codeGenerator;
+
       DtoFileContent = string.Empty;
       OutputFilePath = string.Empty;
-      LoadingProgress = new LoadingViewModel()
+      LoadingProgress = new LoadingViewModel
       {
         MaxValue = sourceFiles.Count * 2
       };
@@ -94,7 +103,7 @@ namespace DtoGenerator.UI.ViewModels
         OutputFilePath = $"{selectedFilePath.Remove(selectedFilePath.LastIndexOf(modelFileName))}{modelFileName}{Constants.DtoSuffix}.cs");
 
       FileInfo = await _fileProcessor.Analyze(selectedFilePath, allProjectSourcesExceptSelected, onLoadingProgressChanged);
-      Dispatcher.CurrentDispatcher.Invoke(() => DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo));
+      Dispatcher.CurrentDispatcher.Invoke(() => DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo));
 
       if (FileInfo?.Classes != null)
       {
@@ -147,25 +156,25 @@ namespace DtoGenerator.UI.ViewModels
     private void classStateChanged(ClassInfo model, bool isEnabled)
     {
       model.IsEnabled = isEnabled;
-      DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo);
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
     }
 
     private void propertyStateChanged(PropertyInfo property, bool isEnabled)
     {
       property.IsEnabled = isEnabled;
-      DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo);
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
     }
 
     private void toModelMethodStateChanged(ClassInfo model, bool isEnabled)
     {
       model.NeedToModelMethod = isEnabled;
-      DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo);
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
     }
 
     private void fromModelMethodStateChanged(ClassInfo model, bool isEnabled)
     {
       model.NeedFromModelMethod = isEnabled;
-      DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo);
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
     }
 
     private void onLoadingProgressChanged(int value)

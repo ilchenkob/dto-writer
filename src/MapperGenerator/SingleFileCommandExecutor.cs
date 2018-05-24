@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DtoGenerator.Logic;
 using DtoGenerator.UI.Views;
 using EnvDTE;
 
@@ -47,7 +45,7 @@ namespace DtoGenerator
           }
         };
 
-        var viewModel = new UI.ViewModels.SingleFileDtoViewModel(filePath, allSources, saveFile);
+        var viewModel = new UI.ViewModels.SingleFileDtoViewModel(new SingleFileProcessor(), new CodeGenerator(), filePath, allSources, saveFile);
         singleFileDialog = new SingleFileDto(viewModel);
         singleFileDialog.ShowModal();
       }
