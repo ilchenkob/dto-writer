@@ -31,7 +31,9 @@ namespace DtoGenerator.UI.ViewModels
       Items = new ObservableCollection<NodeViewModel>();
       CreateCommand = new Command(createExecute, () => IsCreateEnabled);
       
+#pragma warning disable 4014 // don't need to wait async operation
       loadSourceFile(selectedFilePath, sourceFiles);
+#pragma warning restore 4014
     }
 
     public ObservableCollection<NodeViewModel> Items { get; }
@@ -88,10 +90,11 @@ namespace DtoGenerator.UI.ViewModels
     private async Task loadSourceFile(string selectedFilePath, IEnumerable<string> allProjectSourcesExceptSelected)
     {
       var modelFileName = Path.GetFileNameWithoutExtension(selectedFilePath);
-      OutputFilePath = $"{selectedFilePath.Remove(selectedFilePath.LastIndexOf(modelFileName))}{modelFileName}{Constants.DtoSuffix}.cs";
+      Dispatcher.CurrentDispatcher.Invoke(() => 
+        OutputFilePath = $"{selectedFilePath.Remove(selectedFilePath.LastIndexOf(modelFileName))}{modelFileName}{Constants.DtoSuffix}.cs");
 
       FileInfo = await _fileProcessor.Analyze(selectedFilePath, allProjectSourcesExceptSelected, onLoadingProgressChanged);
-      DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo);
+      Dispatcher.CurrentDispatcher.Invoke(() => DtoFileContent = _fileProcessor.GenerateSourcecode(FileInfo));
 
       if (FileInfo?.Classes != null)
       {

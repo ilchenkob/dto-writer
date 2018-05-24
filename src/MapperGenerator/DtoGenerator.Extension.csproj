@@ -54,6 +54,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CodeEditorCommand.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Logic\Constants.cs" />
     <Compile Include="Logic\PropertyMappers\ArrayPropertyMapper.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="MenuCommand.cs" />
     <Compile Include="MenuCommandPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SingleFileCommandExecutor.cs" />
     <Compile Include="UI\ViewModels\NodeViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadingViewModel.cs" />
     <Compile Include="UI\Views\Converters\LoadingProgressToVisibilityConverter.cs" />
@@ -127,6 +129,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="Resources\CodeEditorCommand.png" />
     <Content Include="Resources\MenuCommand.png" />
     <Content Include="Resources\MenuCommandPackage.ico" />
     <Content Include="stylesheet.css" />

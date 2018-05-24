@@ -1,41 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.ComponentModel.Design;
+using System.Globalization;
+using System.Linq;
 using DtoGenerator.UI.Views;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace DtoGenerator
 {
   /// <summary>
   /// Command handler
   /// </summary>
-  internal sealed class MenuCommand
+  internal sealed class CodeEditorCommand
   {
     /// <summary>
     /// Command ID.
     /// </summary>
-    public const int solutionExplorerItemCommandId = 0x0100;
+    public const int CommandId = 0x0100;
 
     /// <summary>
     /// Command menu group (command set GUID).
     /// </summary>
-    public static readonly Guid CommandSet = new Guid("2c2abdcc-52e1-4096-b408-1ccb207c9e9f");
+    public static readonly Guid CommandSet = new Guid("cbb4e331-1562-4fc1-b7d0-eaee9ed27e56");
 
     /// <summary>
     /// VS Package that provides this command, not null.
     /// </summary>
     private readonly Package package;
 
-
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="MenuCommand"/> class.
+    /// Initializes a new instance of the <see cref="CodeEditorCommand"/> class.
     /// Adds our command handlers for menu (commands must exist in the command table file)
     /// </summary>
     /// <param name="package">Owner package, not null.</param>
-    private MenuCommand(Package package)
+    private CodeEditorCommand(Package package)
     {
       if (package == null)
       {
@@ -43,11 +42,11 @@ namespace DtoGenerator
       }
 
       this.package = package;
+
       if (this.ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
       {
-        var menuCommandId = new CommandID(CommandSet, solutionExplorerItemCommandId);
+        var menuCommandId = new CommandID(CommandSet, CommandId);
         var menuItem = new OleMenuCommand(this.MenuItemCallback, menuCommandId);
-        menuItem.BeforeQueryStatus += OnCanShowMenuItem;
         commandService.AddCommand(menuItem);
       }
     }
@@ -55,7 +54,7 @@ namespace DtoGenerator
     /// <summary>
     /// Gets the instance of the command.
     /// </summary>
-    public static MenuCommand Instance
+    public static CodeEditorCommand Instance
     {
       get;
       private set;
@@ -72,28 +71,7 @@ namespace DtoGenerator
     /// <param name="package">Owner package, not null.</param>
     public static void Initialize(Package package)
     {
-      Instance = new MenuCommand(package);
-    }
-
-    private void OnCanShowMenuItem(object sender, EventArgs e)
-    {
-      // get the menu that fired the event
-      if (sender is OleMenuCommand menuCommand)
-      {
-        // start by assuming that the menu will not be shown
-        menuCommand.Visible = false;
-        menuCommand.Enabled = false;
-
-        var ide = (EnvDTE80.DTE2)this.ServiceProvider.GetService(typeof(DTE));
-        var selectedItem = GetSelectedSolutionExplorerItem(ide);
-        if (selectedItem == null)
-          return;
-        
-        var isCsharp = selectedItem.Name.EndsWith(".cs");
-        
-        menuCommand.Visible = true;
-        menuCommand.Enabled = isCsharp;
-      }
+      Instance = new CodeEditorCommand(package);
     }
 
     /// <summary>
@@ -108,25 +86,14 @@ namespace DtoGenerator
       if (senderObj is OleMenuCommand && args is OleMenuCmdEventArgs)
       {
         var ide = (EnvDTE80.DTE2)this.ServiceProvider.GetService(typeof(DTE));
-        var selectedItem = this.GetSelectedSolutionExplorerItem(ide);
+        var selectedItem = this.GetOpenedCodeEditorItem(ide);
         new SingleFileCommandExecutor(selectedItem).Run();
       }
     }
 
-    private ProjectItem GetSelectedSolutionExplorerItem(EnvDTE80.DTE2 ide)
+    private ProjectItem GetOpenedCodeEditorItem(EnvDTE80.DTE2 ide)
     {
-      var solutionExplorer = ide.ToolWindows.SolutionExplorer;
-      if (solutionExplorer.SelectedItems is object[] items)
-      {
-        if (items.Length == 1 && items[0] is EnvDTE.UIHierarchyItem hierarchyItem)
-        {
-          var projectItem = ide.Solution.FindProjectItem(hierarchyItem.Name);
-          if (projectItem != null)
-            return projectItem;
-        }
-      }
-
-      return null;
+      return ide.ActiveDocument.ProjectItem;
     }
   }
 }

@@ -55,9 +55,10 @@ namespace DtoGenerator
     protected override System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
     {
       MenuCommand.Initialize(this);
+      CodeEditorCommand.Initialize(this);
       return base.InitializeAsync(cancellationToken, progress);
     }
-
+    
     #endregion
   }
 }

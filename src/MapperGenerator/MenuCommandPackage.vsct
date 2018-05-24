@@ -15,10 +15,10 @@
         defining some of the constants that we will use inside the file. -->
 
   <!--This is the file that defines the IDs for all the commands exposed by VisualStudio. -->
-  <Extern href="stdidcmd.h"/>
+  <Extern href="stdidcmd.h" />
 
   <!--This header contains the command ids for the menus provided by the shell. -->
-  <Extern href="vsshlids.h"/>
+  <Extern href="vsshlids.h" />
 
   <!--The Commands section is where commands, menus, and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
@@ -38,15 +38,15 @@
     <Groups>
       <Group guid="guidMenuCommandPackageCmdSet" id="MyMenuGroup" priority="0x0100">
         <!--priority="0x0600"-->
-        <Parent guid="solutionExplorerItemCommandSet" id="solutionExplorerItemCommandId"/>
+        <Parent guid="solutionExplorerItemCommandSet" id="solutionExplorerItemCommandId" />
       </Group>
-    </Groups>
-
-    <Groups>
-      <Group guid="guidMenuCommandPackageCmdSet" id="MyMenuGroup" priority="0x0100">
+      <Group guid="guidMenuCommandPackageCmdSet1" id="MyMenuGroup" priority="0x0100">
         <!--priority="0x0600"-->
-        <Parent guid="codeEditorItemCommandSet" id="codeEditorItemCommandId"/>
+        <Parent guid="codeEditorItemCommandSet" id="codeEditorItemCommandId" />
       </Group>
+      <!--<Group guid="guidMenuCommandPackageCmdSet1" id="MyMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS" />
+      </Group>-->
     </Groups>
 
     <!--Buttons section. -->
@@ -67,17 +67,13 @@
           <ButtonText>Create DTO...</ButtonText>
         </Strings>
       </Button>
+      <Button guid="guidMenuCommandPackageCmdSet1" id="cmdidCodeEditorCommand" priority="0x0100" type="Button">
+        <Parent guid="guidMenuCommandPackageCmdSet1" id="MyMenuGroup" />
+        <Strings>
+          <ButtonText>Create DTO...</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
-
-    <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
-    <Bitmaps>
-      <!--  The bitmap id is defined in a way that is a little bit different from the others:
-            the declaration starts with a guid for the bitmap strip, then there is the resource id of the
-            bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
-            inside a button definition. An important aspect of this declaration is that the element id
-            must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\MenuCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
-    </Bitmaps>
   </Commands>
 
   <Symbols>
@@ -85,11 +81,11 @@
     <GuidSymbol name="guidMenuCommandPackage" value="{6cae7fa7-20d2-4e1e-9757-84743828221d}" />
 
     <GuidSymbol name="solutionExplorerItemCommandSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
-      <IDSymbol name="solutionExplorerItemCommandId" value="0x0430"/>
+      <IDSymbol name="solutionExplorerItemCommandId" value="0x0430" />
     </GuidSymbol>
 
     <GuidSymbol name="codeEditorItemCommandSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
-      <IDSymbol name="codeEditorItemCommandId" value="0x040D"/>
+      <IDSymbol name="codeEditorItemCommandId" value="0x040D" />
     </GuidSymbol>
 
     <!-- This is the guid used to group the menu commands together -->
@@ -97,14 +93,10 @@
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="GenerateDtoForClassCommandId" value="0x0100" />
     </GuidSymbol>
-
-    <GuidSymbol name="guidImages" value="{f95d8b5b-baac-4c5f-bc07-f3089316952a}" >
-      <IDSymbol name="bmpPic1" value="1" />
-      <IDSymbol name="bmpPic2" value="2" />
-      <IDSymbol name="bmpPicSearch" value="3" />
-      <IDSymbol name="bmpPicX" value="4" />
-      <IDSymbol name="bmpPicArrows" value="5" />
-      <IDSymbol name="bmpPicStrikethrough" value="6" />
+  
+    <GuidSymbol value="{cbb4e331-1562-4fc1-b7d0-eaee9ed27e56}" name="guidMenuCommandPackageCmdSet1">
+      <IDSymbol value="4128" name="MyMenuGroup" />
+      <IDSymbol value="256" name="cmdidCodeEditorCommand" />
     </GuidSymbol>
   </Symbols>
 </CommandTable>
