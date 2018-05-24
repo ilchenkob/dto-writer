@@ -42,6 +42,13 @@
       </Group>
     </Groups>
 
+    <Groups>
+      <Group guid="guidMenuCommandPackageCmdSet" id="MyMenuGroup" priority="0x0100">
+        <!--priority="0x0600"-->
+        <Parent guid="codeEditorItemCommandSet" id="codeEditorItemCommandId"/>
+      </Group>
+    </Groups>
+
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -79,6 +86,10 @@
 
     <GuidSymbol name="solutionExplorerItemCommandSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
       <IDSymbol name="solutionExplorerItemCommandId" value="0x0430"/>
+    </GuidSymbol>
+
+    <GuidSymbol name="codeEditorItemCommandSet" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
+      <IDSymbol name="codeEditorItemCommandId" value="0x040D"/>
     </GuidSymbol>
 
     <!-- This is the guid used to group the menu commands together -->
