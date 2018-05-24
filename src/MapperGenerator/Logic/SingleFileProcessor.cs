@@ -18,13 +18,13 @@ namespace DtoGenerator.Logic
       IEnumerable<string> allProjectSourcesExceptSelected,
       Action<int> onProgressChanged)
     {
-      int[] progress = {0};
+      var progress = 0;
       var projectSourcesParsingTasks = allProjectSourcesExceptSelected.Select(path => Task.Run(async () =>
       {
         var sourceCode = await Helper.ReadFile(path);
-        onProgressChanged?.Invoke(++progress[0]);
+        onProgressChanged?.Invoke(++progress);
         var tree = CSharpSyntaxTree.ParseText(sourceCode);
-        onProgressChanged?.Invoke(++progress[0]);
+        onProgressChanged?.Invoke(++progress);
         return tree;
       }));
       var projectSyntaxTrees = await Task.WhenAll(projectSourcesParsingTasks);
