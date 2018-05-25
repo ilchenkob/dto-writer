@@ -60,6 +60,7 @@
     <Compile Include="Logic\Constants.cs" />
     <Compile Include="Logic\Interfaces\ICodeGenerator.cs" />
     <Compile Include="Logic\Interfaces\ISingleFileProcessor.cs" />
+    <Compile Include="Logic\Models\Project.cs" />
     <Compile Include="Logic\PropertyMappers\ArrayPropertyMapper.cs" />
     <Compile Include="Logic\PropertyMappers\ClassPropertyMapper.cs" />
     <Compile Include="Logic\PropertyMappers\ListPropertyMapper.cs" />

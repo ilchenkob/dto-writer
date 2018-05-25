@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using DtoGenerator.Logic;
 using DtoGenerator.UI.Views;
@@ -8,35 +10,39 @@ namespace DtoGenerator
 {
   public class SingleFileCommandExecutor
   {
-    private readonly ProjectItem _selectedItem;
-    public SingleFileCommandExecutor(ProjectItem selectedItem)
+    private readonly EnvDTE80.DTE2 _ide;
+    public SingleFileCommandExecutor(EnvDTE80.DTE2 ide)
     {
-      _selectedItem = selectedItem ?? throw new NullReferenceException("Selected Document");
+      _ide = ide ?? throw new NullReferenceException("Selected Document");
     }
 
-    public void Run()
+    public void Run(bool calledFromCodeEditor = false)
     {
-      var filePath = _selectedItem.Properties.Item("FullPath").Value.ToString();
+      var selectedItem = calledFromCodeEditor ? getCodeEditorItem() : getSelectedSolutionExplorerItem();
+      var filePath = selectedItem.Properties.Item("FullPath").Value.ToString();
       if (!string.IsNullOrWhiteSpace(filePath))
       {
-        var selectedProject = _selectedItem.ContainingProject;
-        var allSources = Helper.GetProjectItems(selectedProject.ProjectItems)
+        var selectedProject = selectedItem.ContainingProject;
+        var allSources = getAllProjectItems(selectedProject.ProjectItems)
           .Where(v => v.Name.Contains(".cs"))
           .Select(s => s.Properties.Item("FullPath").Value.ToString())
           .Except(new[] { filePath });
 
+        var allProjects = getAllSolutionProjects(selectedProject);
+
         SingleFileDto singleFileDialog = null;
-        Action<string> saveFile = (dtoFilePath) =>
+        Action<string, string> saveFile = (projectName, dtoFilePath) =>
         {
           if (!string.IsNullOrWhiteSpace(dtoFilePath))
           {
             try
             {
-              selectedProject.ProjectItems.AddFromFile(dtoFilePath);
+              var dtoProject = getProjectByName(projectName);
+              dtoProject.ProjectItems.AddFromFile(dtoFilePath);
             }
             catch (Exception ex)
             {
-              var a = ex.Message;
+              var message = ex.Message;
             }
             finally
             {
@@ -45,10 +51,95 @@ namespace DtoGenerator
           }
         };
 
-        var viewModel = new UI.ViewModels.SingleFileDtoViewModel(new SingleFileProcessor(), new CodeGenerator(), filePath, allSources, saveFile);
+        var viewModel = new UI.ViewModels.SingleFileDtoViewModel(
+          new SingleFileProcessor(),
+          new CodeGenerator(),
+          filePath,
+          allProjects,
+          allSources,
+          saveFile);
         singleFileDialog = new SingleFileDto(viewModel);
         singleFileDialog.ShowModal();
       }
+    }
+
+    public bool CanHandleSelectedItem()
+    {
+      var selectedItem = getSelectedSolutionExplorerItem();
+      return selectedItem != null && selectedItem.Name.EndsWith(".cs");
+    }
+
+    public ProjectItem getSelectedSolutionExplorerItem()
+    {
+      var solutionExplorer = _ide.ToolWindows.SolutionExplorer;
+      if (solutionExplorer.SelectedItems is object[] items)
+      {
+        if (items.Length == 1 && items[0] is UIHierarchyItem hierarchyItem)
+        {
+          var projectItem = _ide.Solution.FindProjectItem(hierarchyItem.Name);
+          if (projectItem != null)
+            return projectItem;
+        }
+      }
+
+      return null;
+    }
+
+    private ProjectItem getCodeEditorItem()
+    {
+      return _ide.ActiveDocument.ProjectItem;
+    }
+
+    private IEnumerable<ProjectItem> getAllProjectItems(ProjectItems projectItems)
+    {
+      foreach (ProjectItem item in projectItems)
+      {
+        yield return item;
+
+        if (item.SubProject != null)
+        {
+          foreach (ProjectItem childItem in getAllProjectItems(item.SubProject.ProjectItems))
+            yield return childItem;
+        }
+        else
+        {
+          foreach (ProjectItem childItem in getAllProjectItems(item.ProjectItems))
+            yield return childItem;
+        }
+      }
+    }
+
+    private IReadOnlyCollection<Logic.Models.Project> getAllSolutionProjects(Project selectedProject)
+    {
+      var selectedProjectName = selectedProject.Name;
+      var allProjects = new List<Logic.Models.Project>();
+      for (var i = 1; i < _ide.Solution.Projects.Count + 1; i++)
+      {
+        var project = _ide.Solution.Projects.Item(i);
+        allProjects.Add(new Logic.Models.Project
+        {
+          Name = project.Name,
+          Path = project.FullName.Remove(project.FullName.LastIndexOf('\\')),
+          DefaultNamespace = project.Properties.Item("DefaultNamespace").Value.ToString(),
+          IsSelected = project.Name.Equals(selectedProjectName, StringComparison.InvariantCultureIgnoreCase)
+        });
+      }
+
+      return new ReadOnlyCollection<Logic.Models.Project>(allProjects);
+    }
+
+    private Project getProjectByName(string name)
+    {
+      for (var i = 1; i < _ide.Solution.Projects.Count + 1; i++)
+      {
+        var project = _ide.Solution.Projects.Item(i);
+        if (project.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+        {
+          return project;
+        }
+      }
+
+      return null;
     }
   }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.ComponentModel.Design;
 using DtoGenerator.UI.Views;
@@ -28,7 +29,12 @@ namespace DtoGenerator
     /// </summary>
     private readonly Package package;
 
+    /// <summary>
+    /// Gets the service provider from the owner package.
+    /// </summary>
+    private IServiceProvider serviceProvider => this.package;
 
+    private readonly SingleFileCommandExecutor singleFileCommandExecutor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MenuCommand"/> class.
@@ -37,18 +43,17 @@ namespace DtoGenerator
     /// <param name="package">Owner package, not null.</param>
     private MenuCommand(Package package)
     {
-      if (package == null)
-      {
-        throw new ArgumentNullException("package");
-      }
-
-      this.package = package;
-      if (this.ServiceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
+      this.package = package ?? throw new ArgumentNullException("package");
+      if (this.serviceProvider.GetService(typeof(IMenuCommandService)) is OleMenuCommandService commandService)
       {
         var menuCommandId = new CommandID(CommandSet, solutionExplorerItemCommandId);
         var menuItem = new OleMenuCommand(this.MenuItemCallback, menuCommandId);
         menuItem.BeforeQueryStatus += OnCanShowMenuItem;
         commandService.AddCommand(menuItem);
+
+
+        var ide = (EnvDTE80.DTE2)this.serviceProvider.GetService(typeof(DTE));
+        singleFileCommandExecutor = new SingleFileCommandExecutor(ide);
       }
     }
 
@@ -61,11 +66,7 @@ namespace DtoGenerator
       private set;
     }
 
-    /// <summary>
-    /// Gets the service provider from the owner package.
-    /// </summary>
-    private IServiceProvider ServiceProvider => this.package;
-
+    
     /// <summary>
     /// Initializes the singleton instance of the command.
     /// </summary>
@@ -80,18 +81,9 @@ namespace DtoGenerator
       // get the menu that fired the event
       if (sender is OleMenuCommand menuCommand)
       {
-        // start by assuming that the menu will not be shown
-        menuCommand.Visible = false;
-        menuCommand.Enabled = false;
+        var isCsharp = singleFileCommandExecutor.CanHandleSelectedItem();
 
-        var ide = (EnvDTE80.DTE2)this.ServiceProvider.GetService(typeof(DTE));
-        var selectedItem = GetSelectedSolutionExplorerItem(ide);
-        if (selectedItem == null)
-          return;
-        
-        var isCsharp = selectedItem.Name.EndsWith(".cs");
-        
-        menuCommand.Visible = true;
+        menuCommand.Visible = isCsharp;
         menuCommand.Enabled = isCsharp;
       }
     }
@@ -107,26 +99,8 @@ namespace DtoGenerator
     {
       if (senderObj is OleMenuCommand && args is OleMenuCmdEventArgs)
       {
-        var ide = (EnvDTE80.DTE2)this.ServiceProvider.GetService(typeof(DTE));
-        var selectedItem = this.GetSelectedSolutionExplorerItem(ide);
-        new SingleFileCommandExecutor(selectedItem).Run();
+        singleFileCommandExecutor.Run();
       }
-    }
-
-    private ProjectItem GetSelectedSolutionExplorerItem(EnvDTE80.DTE2 ide)
-    {
-      var solutionExplorer = ide.ToolWindows.SolutionExplorer;
-      if (solutionExplorer.SelectedItems is object[] items)
-      {
-        if (items.Length == 1 && items[0] is EnvDTE.UIHierarchyItem hierarchyItem)
-        {
-          var projectItem = ide.Solution.FindProjectItem(hierarchyItem.Name);
-          if (projectItem != null)
-            return projectItem;
-        }
-      }
-
-      return null;
     }
   }
 }

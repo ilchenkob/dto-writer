@@ -14,7 +14,8 @@ namespace DtoGenerator.UI.ViewModels
 {
   public class SingleFileDtoViewModel : BaseViewModel
   {
-    private readonly Action<string> _dtoFileCreated;
+    private readonly Action<string, string> _dtoFileCreated;
+    private IReadOnlyCollection<Project> _allSolutionProjects;
     private readonly ISingleFileProcessor _fileProcessor;
     private readonly ICodeGenerator _codeGenerator;
     
@@ -22,11 +23,13 @@ namespace DtoGenerator.UI.ViewModels
       ISingleFileProcessor fileProcessor,
       ICodeGenerator codeGenerator,
       string selectedFilePath,
+      IReadOnlyCollection<Project> allSolutionProjects,
       IEnumerable<string> allProjectSourcesExceptSelected,
-      Action<string> onCreateCallback)
+      Action<string, string> onCreateCallback)
     {
       var sourceFiles = allProjectSourcesExceptSelected.ToList();
 
+      _allSolutionProjects = allSolutionProjects;
       _dtoFileCreated = onCreateCallback;
       _fileProcessor = fileProcessor;
       _codeGenerator = codeGenerator;
@@ -37,6 +40,10 @@ namespace DtoGenerator.UI.ViewModels
       {
         MaxValue = sourceFiles.Count * 2
       };
+
+      ProjectNames = allSolutionProjects.Select(p => p.Name).ToList();
+      SelectedProjectName = allSolutionProjects.FirstOrDefault(p => p.IsSelected)?.Name;
+
       Items = new ObservableCollection<NodeViewModel>();
       CreateCommand = new Command(createExecute, () => IsCreateEnabled);
       
@@ -44,6 +51,31 @@ namespace DtoGenerator.UI.ViewModels
       loadSourceFile(selectedFilePath, sourceFiles);
 #pragma warning restore 4014
     }
+
+    private string _selectedProjectName;
+
+    public string SelectedProjectName
+    {
+      get => _selectedProjectName;
+      set
+      {
+        var prevProject = _allSolutionProjects.FirstOrDefault(p =>
+          p.Name.Equals(_selectedProjectName, StringComparison.InvariantCultureIgnoreCase));
+        var newProject = _allSolutionProjects.FirstOrDefault(p =>
+          p.Name.Equals(value, StringComparison.InvariantCultureIgnoreCase));
+
+        if (prevProject != null && newProject != null && DtoNamespace.Contains(prevProject.DefaultNamespace))
+        {
+          DtoNamespace = $"{newProject.DefaultNamespace}{DtoNamespace.Remove(0, prevProject.DefaultNamespace.Length)}";
+          NotifyPropertyChanged(() => DtoNamespace);
+        }
+
+        _selectedProjectName = value;
+        NotifyPropertyChanged(() => SelectedProjectName);
+      }
+    }
+
+    public List<string> ProjectNames { get; }  
 
     public ObservableCollection<NodeViewModel> Items { get; }
 
@@ -53,7 +85,9 @@ namespace DtoGenerator.UI.ViewModels
 
     public ICommand CreateCommand { get; }
 
-    public bool IsCreateEnabled => !string.IsNullOrWhiteSpace(OutputFilePath) && !string.IsNullOrWhiteSpace(DtoFileContent);
+    public bool IsCreateEnabled => !string.IsNullOrWhiteSpace(OutputFilePath) &&
+                                   !string.IsNullOrWhiteSpace(DtoFileContent) &&
+                                   LoadingProgress.IsCompleted;
 
     public string DtoNamespace
     {
@@ -98,9 +132,16 @@ namespace DtoGenerator.UI.ViewModels
 
     private async Task loadSourceFile(string selectedFilePath, IEnumerable<string> allProjectSourcesExceptSelected)
     {
+      var selectedProject = _allSolutionProjects.FirstOrDefault(p => p.IsSelected);
+      if (selectedProject == null)
+        throw new InvalidOperationException("At least one project should be marked as selected");
+
       var modelFileName = Path.GetFileNameWithoutExtension(selectedFilePath);
-      Dispatcher.CurrentDispatcher.Invoke(() => 
-        OutputFilePath = $"{selectedFilePath.Remove(selectedFilePath.LastIndexOf(modelFileName))}{modelFileName}{Constants.DtoSuffix}.cs");
+      var outputFilePath =
+        $"{selectedFilePath.Remove(selectedFilePath.LastIndexOf(modelFileName, StringComparison.InvariantCultureIgnoreCase))}{modelFileName}{Constants.DtoSuffix}.cs";
+      outputFilePath = outputFilePath.Remove(0, selectedProject.Path.Length);
+
+      Dispatcher.CurrentDispatcher.Invoke(() => OutputFilePath = outputFilePath);
 
       FileInfo = await _fileProcessor.Analyze(selectedFilePath, allProjectSourcesExceptSelected, onLoadingProgressChanged);
       Dispatcher.CurrentDispatcher.Invoke(() => DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo));
@@ -123,6 +164,7 @@ namespace DtoGenerator.UI.ViewModels
 
       Dispatcher.CurrentDispatcher.Invoke(() =>
       {
+        NotifyPropertyChanged(() => ProjectNames);
         NotifyPropertyChanged(() => DtoNamespace);
         LoadingProgress.Value = LoadingProgress.MaxValue;
         IsSyntaxTreeReady = true;
@@ -133,21 +175,24 @@ namespace DtoGenerator.UI.ViewModels
     private void createExecute()
     {
       var saveCompleted = false;
+      var selectedProject = _allSolutionProjects.FirstOrDefault(p =>
+        p.Name.Equals(SelectedProjectName, StringComparison.InvariantCultureIgnoreCase));
+
+      var dtoFilePath = Path.Combine(selectedProject.Path, OutputFilePath.TrimStart('\\'));
       while (!saveCompleted)
       {
         try
         {
-          File.WriteAllText(OutputFilePath, DtoFileContent);
-          _dtoFileCreated?.Invoke(OutputFilePath);
+          File.WriteAllText(dtoFilePath, DtoFileContent);
+          _dtoFileCreated?.Invoke(selectedProject.Name, dtoFilePath);
           saveCompleted = true;
         }
         catch (DirectoryNotFoundException)
         {
-          Directory.CreateDirectory(Path.GetDirectoryName(OutputFilePath));
+          Directory.CreateDirectory(Path.GetDirectoryName(dtoFilePath));
         }
         catch (Exception ex)
         {
-          var a = ex.Message;
           saveCompleted = true;
         }
       }

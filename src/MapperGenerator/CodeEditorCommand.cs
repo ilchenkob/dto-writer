@@ -86,14 +86,8 @@ namespace DtoGenerator
       if (senderObj is OleMenuCommand && args is OleMenuCmdEventArgs)
       {
         var ide = (EnvDTE80.DTE2)this.ServiceProvider.GetService(typeof(DTE));
-        var selectedItem = this.GetOpenedCodeEditorItem(ide);
-        new SingleFileCommandExecutor(selectedItem).Run();
+        new SingleFileCommandExecutor(ide).Run(true);
       }
-    }
-
-    private ProjectItem GetOpenedCodeEditorItem(EnvDTE80.DTE2 ide)
-    {
-      return ide.ActiveDocument.ProjectItem;
     }
   }
 }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DtoGenerator.UI.ViewModels
 {
@@ -27,7 +25,7 @@ namespace DtoGenerator.UI.ViewModels
     private bool _isEnabled;
     public bool IsEnabled
     {
-      get { return _isEnabled; }
+      get => _isEnabled;
       private set
       {
         _isEnabled = value;
@@ -38,7 +36,7 @@ namespace DtoGenerator.UI.ViewModels
     private string _title;
     public string Title
     {
-      get { return _title; }
+      get => _title;
       set
       {
         _title = value;
