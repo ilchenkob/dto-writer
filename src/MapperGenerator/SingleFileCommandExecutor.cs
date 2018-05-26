@@ -115,14 +115,22 @@ namespace DtoGenerator
       var allProjects = new List<Logic.Models.Project>();
       for (var i = 1; i < _ide.Solution.Projects.Count + 1; i++)
       {
-        var project = _ide.Solution.Projects.Item(i);
-        allProjects.Add(new Logic.Models.Project
+        try
         {
-          Name = project.Name,
-          Path = project.FullName.Remove(project.FullName.LastIndexOf('\\')),
-          DefaultNamespace = project.Properties.Item("DefaultNamespace").Value.ToString(),
-          IsSelected = project.Name.Equals(selectedProjectName, StringComparison.InvariantCultureIgnoreCase)
-        });
+          var project = _ide.Solution.Projects.Item(i);
+          if (!string.IsNullOrWhiteSpace(project.Name) && !string.IsNullOrWhiteSpace(project.FullName))
+            allProjects.Add(new Logic.Models.Project
+            {
+              Name = project.Name,
+              Path = project.FullName.Remove(project.FullName.LastIndexOf('\\')),
+              DefaultNamespace = project.Properties.Item("DefaultNamespace").Value.ToString(),
+              IsSelected = project.Name.Equals(selectedProjectName, StringComparison.InvariantCultureIgnoreCase)
+            });
+        }
+        catch (Exception e)
+        {
+          // TODO: handle unexpected cases
+        }
       }
 
       return new ReadOnlyCollection<Logic.Models.Project>(allProjects);

@@ -137,11 +137,11 @@ namespace DtoGenerator.UI.ViewModels
         throw new InvalidOperationException("At least one project should be marked as selected");
 
       var modelFileName = Path.GetFileNameWithoutExtension(selectedFilePath);
-      var outputFilePath =
-        $"{selectedFilePath.Remove(selectedFilePath.LastIndexOf(modelFileName, StringComparison.InvariantCultureIgnoreCase))}{modelFileName}{Constants.DtoSuffix}.cs";
-      outputFilePath = outputFilePath.Remove(0, selectedProject.Path.Length);
-
-      Dispatcher.CurrentDispatcher.Invoke(() => OutputFilePath = outputFilePath);
+      var modelFileDirectory = Path.GetDirectoryName(selectedFilePath);
+      if (!string.IsNullOrWhiteSpace(modelFileDirectory))
+        modelFileDirectory = modelFileDirectory.Remove(0, selectedProject.Path.Length);
+      
+      Dispatcher.CurrentDispatcher.Invoke(() => OutputFilePath = $"{modelFileDirectory}\\{modelFileName}{Constants.DtoSuffix}.cs");
 
       FileInfo = await _fileProcessor.Analyze(selectedFilePath, allProjectSourcesExceptSelected, onLoadingProgressChanged);
       Dispatcher.CurrentDispatcher.Invoke(() => DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo));
