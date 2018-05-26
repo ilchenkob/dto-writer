@@ -44,9 +44,9 @@
         </Grid.RowDefinitions>
         <Label VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Margin="8,0,0,0">Class Explorer</Label>
       <Label VerticalAlignment="Center" Grid.Column="1" Grid.Row="0">Preview</Label>
-      <TreeView x:Name="tree" Grid.Column="0" Grid.Row="2" Margin="8,0,8,0" Background="White" ItemsSource="{Binding Items}">
+      <TreeView x:Name="tree" Grid.Column="0" Grid.Row="2" Margin="8,0,8,0" Background="White" ItemsSource="{Binding SyntaxTreeItems}">
         <TreeView.ItemTemplate>
-          <HierarchicalDataTemplate ItemsSource="{Binding Items}">
+          <HierarchicalDataTemplate ItemsSource="{Binding Childs}">
             <CheckBox Checked="TreeCheckBox_Checked" Unchecked="TreeCheckBox_Unchecked" IsChecked="{Binding IsEnabled, Mode=OneWay}" Content="{Binding Title}" />
           </HierarchicalDataTemplate>
         </TreeView.ItemTemplate>

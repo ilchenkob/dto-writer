@@ -1,15 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="MapperGenerator.1bd4abe3-2c61-487c-9368-e554a21120e7" Version="2.1" Language="en-US" Publisher="Vitalii Ilchenko" />
+        <Identity Id="MapperGenerator.1bd4abe3-2c61-487c-9368-e554a21120e7" Version="2.2" Language="en-US" Publisher="Vitalii Ilchenko" />
         <DisplayName>DTO Writer</DisplayName>
-        <Description xml:space="preserve">Simple code generation tool for DTO-classes creation.
-You can easily create DTO-classes for your models in three clicks:
-1. Make right mouse click in Solution Explorer on your .cs file that contains model classes.
-2. Click "Create DTO" in context menu (You can find the same menu item in context menu of code editor area).
-3. Click "OK" in creator dialog window.
-This is it! Your DTO(s) will be generated, saved into new file and this file will be added to your project.
-Additionally you can uncheck unnecessary model properties, mapping methods, or change the location where the file will be created.
+        <Description xml:space="preserve">Simple code generation tool for DTO-classes creation. Gives you ability to create DTO-classes for your models in three clicks.
 </Description>
         <Icon>icon.png</Icon>
         <PreviewImage>preview.png</PreviewImage>

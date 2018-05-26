@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using DtoGenerator.UI.ViewModels;
+using DtoGenerator.UI.ViewModels.TreeNodes;
 
 namespace DtoGenerator.UI.Views
 {

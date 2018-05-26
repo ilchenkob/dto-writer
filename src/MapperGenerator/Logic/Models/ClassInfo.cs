@@ -14,5 +14,9 @@ namespace DtoGenerator.Logic.Models
     public bool NeedFromModelMethod { get; set; } = true;
 
     public bool NeedToModelMethod { get; set; } = true;
+
+    public bool NeedJsonPropertyAttribute { get; set; }
+
+    public bool NeedDataMemberPropertyAttribute { get; set; }
   }
 }

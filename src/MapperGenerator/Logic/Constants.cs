@@ -8,11 +8,15 @@ namespace DtoGenerator.Logic
 
     public class Using
     {
+      public const string NewtonsoftJson = "Newtonsoft.Json";
+
       public const string System = "System";
 
       public const string SystemCollectionsGeneric = "System.Collections.Generic";
 
       public const string SystemLinq = "System.Linq";
+
+      public const string SystemRuntimeSerialization = "System.Runtime.Serialization";
     }
 
     public static List<string> SimpleTypeNames => new List<string>

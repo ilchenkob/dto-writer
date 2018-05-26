@@ -55,6 +55,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CodeEditorCommand.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Logic\CodeGenerator.cs" />
     <Compile Include="Logic\Constants.cs" />
@@ -78,8 +79,12 @@
     <Compile Include="MenuCommandPackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SingleFileCommandExecutor.cs" />
-    <Compile Include="UI\ViewModels\NodeViewModel.cs" />
+    <Compile Include="UI\ViewModels\TreeNodes\AttributesNodeViewModel.cs" />
+    <Compile Include="UI\ViewModels\TreeNodes\ClassNodeViewModel.cs" />
+    <Compile Include="UI\ViewModels\TreeNodes\MethodsNodeViewModel.cs" />
+    <Compile Include="UI\ViewModels\TreeNodes\NodeViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadingViewModel.cs" />
+    <Compile Include="UI\ViewModels\TreeNodes\PropertiesNodeViewModel.cs" />
     <Compile Include="UI\Views\Converters\LoadingProgressToVisibilityConverter.cs" />
     <Compile Include="UI\Views\SingleFileDto.xaml.cs">
       <DependentUpon>SingleFileDto.xaml</DependentUpon>

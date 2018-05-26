@@ -21,22 +21,21 @@ namespace DtoGenerator.Logic
         var dtoDeclaration = SyntaxFactory.ClassDeclaration(dtoName)
                                           .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
+        if (model.NeedDataMemberPropertyAttribute)
+          dtoDeclaration =
+            dtoDeclaration.AddAttributeLists(new []
+            {
+              SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
+                SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("DataContract"))))
+            });
+
         var fromModelFieldsMapping = new StringBuilder("\n");
         var toModelFieldsMapping = new StringBuilder("\n");
         foreach (var prop in model.Properties.Where(p => p.IsEnabled))
         {
-          var setAccessor = SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                                          .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
-          if (!prop.HasSetter)
-            setAccessor = setAccessor.AddModifiers(SyntaxFactory.Token(SyntaxKind.PrivateKeyword));
-
-          var propertyDeclaration = SyntaxFactory
-                  .PropertyDeclaration(string.IsNullOrWhiteSpace(prop.TypeName) ? prop.Type : SyntaxFactory.ParseTypeName(prop.TypeName), prop.Name)
-                  .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                  .AddAccessorListAccessors(
-                      SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                      setAccessor);
-            
+          var propertyDeclaration = createPropertyDeclaration(prop,
+                                                              model.NeedDataMemberPropertyAttribute,
+                                                              model.NeedJsonPropertyAttribute);
           dtoDeclaration = dtoDeclaration.AddMembers(propertyDeclaration);
 
           if (model.NeedFromModelMethod)
@@ -57,16 +56,7 @@ namespace DtoGenerator.Logic
                                 .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.System)))
                                 .AddMembers(dtoNamespace);
 
-      if (fileInfo.Classes.Where(c => c.IsEnabled)
-                          .Any(c => c.Properties.Any(p => p.IsGenericType && p.IsEnabled)))
-      {
-        dtoFile = dtoFile.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.SystemCollectionsGeneric)));
-      }
-      if (fileInfo.Classes.Where(c => c.IsEnabled)
-        .Any(c => c.Properties.Any(p => p.IsEnumerableType && p.IsEnabled)))
-      {
-        dtoFile = dtoFile.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.SystemLinq)));
-      }
+      dtoFile = includeUsings(dtoFile, fileInfo);
 
       return cleanupCodeFormatting(dtoFile.NormalizeWhitespace().ToFullString());
     }
@@ -104,6 +94,80 @@ namespace DtoGenerator.Logic
           SyntaxFactory.ParseStatement(toModelMethodBody)));
 
       return toModelMethodDeclaration;
+    }
+
+    private PropertyDeclarationSyntax createPropertyDeclaration(PropertyInfo prop, bool needDataMemberAttribute, bool needJsonPropAttribute)
+    {
+      var setAccessor = SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+      if (!prop.HasSetter)
+        setAccessor = setAccessor.AddModifiers(SyntaxFactory.Token(SyntaxKind.PrivateKeyword));
+
+      var propertyDeclaration = SyntaxFactory
+        .PropertyDeclaration(string.IsNullOrWhiteSpace(prop.TypeName) ? prop.Type : SyntaxFactory.ParseTypeName(prop.TypeName), prop.Name)
+        .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+        .AddAccessorListAccessors(
+          SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
+          setAccessor);
+
+      if (needDataMemberAttribute)
+        propertyDeclaration = propertyDeclaration.AddAttributeLists(new[]
+        {
+          SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
+            SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("DataMember"))))
+        });
+
+      if (needJsonPropAttribute)
+        propertyDeclaration = propertyDeclaration.AddAttributeLists(new[]
+        {
+          SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
+              SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("JsonProperty"))
+                .WithArgumentList(
+                  SyntaxFactory.AttributeArgumentList(
+                    SyntaxFactory.SingletonSeparatedList(
+                      SyntaxFactory.AttributeArgument(
+                        SyntaxFactory.LiteralExpression(
+                          SyntaxKind.StringLiteralExpression,
+                          SyntaxFactory.Literal(prop.Name.ToLowerCamelCase())
+                        )
+                      )
+                    )
+                  )
+                )
+            )
+          )
+        });
+
+      return propertyDeclaration;
+    }
+
+    private CompilationUnitSyntax includeUsings(CompilationUnitSyntax dtoFile, FileInfo fileInfo)
+    {
+      var result = dtoFile;
+      if (fileInfo.Classes.Where(c => c.IsEnabled)
+        .Any(c => c.Properties.Any(p => p.IsGenericType && p.IsEnabled)))
+      {
+        result = result.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.SystemCollectionsGeneric)));
+      }
+      if (fileInfo.Classes.Where(c => c.IsEnabled)
+        .Any(c => c.Properties.Any(p => p.IsEnumerableType && p.IsEnabled)))
+      {
+        result = result.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.SystemLinq)));
+      }
+      if (fileInfo.Classes.Any(c => c.NeedDataMemberPropertyAttribute))
+      {
+        result = result.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.SystemRuntimeSerialization)));
+      }
+      if (fileInfo.Classes.Any(c => c.NeedJsonPropertyAttribute))
+      {
+        result = result.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(Constants.Using.NewtonsoftJson)));
+      }
+      if (!fileInfo.Namespace.StartsWith(fileInfo.ModelNamespace))
+      {
+        result = result.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(fileInfo.ModelNamespace)));
+      }
+
+      return result;
     }
   }
 }

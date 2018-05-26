@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using DtoGenerator.Logic;
 using DtoGenerator.Logic.Interfaces;
 using DtoGenerator.Logic.Models;
+using DtoGenerator.UI.ViewModels.TreeNodes;
 
 namespace DtoGenerator.UI.ViewModels
 {
@@ -44,7 +45,7 @@ namespace DtoGenerator.UI.ViewModels
       ProjectNames = allSolutionProjects.Select(p => p.Name).ToList();
       SelectedProjectName = allSolutionProjects.FirstOrDefault(p => p.IsSelected)?.Name;
 
-      Items = new ObservableCollection<NodeViewModel>();
+      SyntaxTreeItems = new ObservableCollection<NodeViewModel>();
       CreateCommand = new Command(createExecute, () => IsCreateEnabled);
       
 #pragma warning disable 4014 // don't need to wait async operation
@@ -67,7 +68,6 @@ namespace DtoGenerator.UI.ViewModels
         if (prevProject != null && newProject != null && DtoNamespace.Contains(prevProject.DefaultNamespace))
         {
           DtoNamespace = $"{newProject.DefaultNamespace}{DtoNamespace.Remove(0, prevProject.DefaultNamespace.Length)}";
-          NotifyPropertyChanged(() => DtoNamespace);
         }
 
         _selectedProjectName = value;
@@ -77,7 +77,7 @@ namespace DtoGenerator.UI.ViewModels
 
     public List<string> ProjectNames { get; }  
 
-    public ObservableCollection<NodeViewModel> Items { get; }
+    public ObservableCollection<NodeViewModel> SyntaxTreeItems { get; }
 
     public bool IsSyntaxTreeReady { get; private set; }
 
@@ -94,10 +94,11 @@ namespace DtoGenerator.UI.ViewModels
       get => FileInfo != null ? FileInfo.Namespace : string.Empty;
       set
       {
-        if (FileInfo != null && !string.IsNullOrWhiteSpace(DtoFileContent) && !FileInfo.Namespace.Equals(value))
+        if (FileInfo != null && !FileInfo.Namespace.Equals(value))
         {
-          DtoFileContent = DtoFileContent.Replace(FileInfo.Namespace, value);
           FileInfo.Namespace = value;
+          DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
+          NotifyPropertyChanged(() => DtoNamespace);
         }
       }
     }
@@ -153,12 +154,14 @@ namespace DtoGenerator.UI.ViewModels
           var classNode = new ClassNodeViewModel(classItem.Name,
             state => classStateChanged(classItem, state),
             state => fromModelMethodStateChanged(classItem, state),
-            state => toModelMethodStateChanged(classItem, state));
+            state => toModelMethodStateChanged(classItem, state),
+            state => dataMemberStateChangedCallback(classItem, state),
+            state => jsonPropStateChangedCallback(classItem, state));
 
           classNode.AddProperties(classItem.Properties != null
             ? classItem.Properties.Select(p => new NodeViewModel(p.Name, state => propertyStateChanged(p, state)))
             : new List<NodeViewModel>());
-          Dispatcher.CurrentDispatcher.Invoke(() => Items.Add(classNode));
+          Dispatcher.CurrentDispatcher.Invoke(() => SyntaxTreeItems.Add(classNode));
         }
       }
 
@@ -219,6 +222,18 @@ namespace DtoGenerator.UI.ViewModels
     private void fromModelMethodStateChanged(ClassInfo model, bool isEnabled)
     {
       model.NeedFromModelMethod = isEnabled;
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
+    }
+
+    private void dataMemberStateChangedCallback(ClassInfo model, bool isEnabled)
+    {
+      model.NeedDataMemberPropertyAttribute = isEnabled;
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
+    }
+
+    private void jsonPropStateChangedCallback(ClassInfo model, bool isEnabled)
+    {
+      model.NeedJsonPropertyAttribute = isEnabled;
       DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
     }
 

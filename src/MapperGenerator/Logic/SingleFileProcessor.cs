@@ -42,6 +42,7 @@ namespace DtoGenerator.Logic
 
       return new FileInfo
       {
+        ModelNamespace = namespaceTitle,
         Namespace = $"{namespaceTitle}.{Constants.DtoSuffix}",
         Classes = classes.Select(classNode => new ClassInfo
         {
