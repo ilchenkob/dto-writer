@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="MapperGenerator.1bd4abe3-2c61-487c-9368-e554a21120e7" Version="2.2" Language="en-US" Publisher="Vitalii Ilchenko" />
+        <Identity Id="MapperGenerator.1bd4abe3-2c61-487c-9368-e554a21120e7" Version="2.4" Language="en-US" Publisher="Vitalii Ilchenko" />
         <DisplayName>DTO Writer</DisplayName>
         <Description xml:space="preserve">Simple code generation tool for DTO-classes creation. Gives you ability to create DTO-classes for your models in three clicks.
 </Description>
@@ -28,5 +28,8 @@
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.CodeAnalysis.Workspaces.Desktop.dll" AssemblyName="Microsoft.CodeAnalysis.Workspaces.Desktop, Version=2.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.dll" AssemblyName="Microsoft.VisualStudio.LanguageServices, Version=2.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.CodeAnalysis.Workspaces.dll" AssemblyName="Microsoft.CodeAnalysis.Workspaces, Version=2.8.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Dto.Analyzer" Path="|Dto.Analyzer|" />
+        <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="Dto.Analyzer" Path="|Dto.Analyzer|" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.VisualStudio.Threading.dll" AssemblyName="Microsoft.VisualStudio.Threading, Version=15.7.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     </Assets>
 </PackageManifest>

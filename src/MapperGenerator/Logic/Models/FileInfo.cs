@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DtoGenerator.Logic.Models
+namespace DtoWriter.Logic.Models
 {
   public class FileInfo
   {

@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Linq.Expressions;
 
-namespace DtoGenerator.UI.ViewModels
+namespace DtoWriter.UI.ViewModels
 {
   public abstract class BaseViewModel : INotifyPropertyChanged
   {

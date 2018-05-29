@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
 
-namespace DtoGenerator
+namespace DtoWriter
 {
   /// <summary>
   /// This is the class that implements the package exposed by this assembly.

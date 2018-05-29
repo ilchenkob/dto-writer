@@ -1,7 +1,7 @@
-﻿using DtoGenerator.Logic.PropertyMappers;
+﻿using DtoWriter.Logic.PropertyMappers;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace DtoGenerator.Logic.Models
+namespace DtoWriter.Logic.Models
 {
   public class PropertyInfo
   {

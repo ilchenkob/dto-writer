@@ -1,4 +1,4 @@
-﻿namespace DtoGenerator.Logic.Models
+﻿namespace DtoWriter.Logic.Models
 {
   public class Project
   {

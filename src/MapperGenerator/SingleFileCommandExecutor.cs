@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using DtoGenerator.Logic;
-using DtoGenerator.UI.Views;
+using DtoWriter.Logic;
+using DtoWriter.UI.ViewModels;
+using DtoWriter.UI.Views;
 using EnvDTE;
 
-namespace DtoGenerator
+namespace DtoWriter
 {
   public class SingleFileCommandExecutor
   {
@@ -51,7 +52,7 @@ namespace DtoGenerator
           }
         };
 
-        var viewModel = new UI.ViewModels.SingleFileDtoViewModel(
+        var viewModel = new SingleFileDtoViewModel(
           new SingleFileProcessor(),
           new CodeGenerator(),
           filePath,

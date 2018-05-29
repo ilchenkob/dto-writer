@@ -1,7 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
+using Dto.Analyzer;
 
-namespace DtoGenerator.UI.ViewModels.TreeNodes
+namespace DtoWriter.UI.ViewModels.TreeNodes
 {
   public class AttributesNodeViewModel : NodeViewModel
   {
@@ -10,8 +11,8 @@ namespace DtoGenerator.UI.ViewModels.TreeNodes
       Title = "Attributes";
       Childs = new ObservableCollection<NodeViewModel>
       {
-        new NodeViewModel { Title = "DataMember", StateChanged = dataMemberStateChangedCallback },
-        new NodeViewModel { Title = "JsonProperty", StateChanged = jsonPropStateChangedCallback }
+        new NodeViewModel { Title = Constants.Attribute.DataMember, StateChanged = dataMemberStateChangedCallback },
+        new NodeViewModel { Title = Constants.Attribute.JsonProperty, StateChanged = jsonPropStateChangedCallback }
       };
       
       base.ChangeState(false);

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace DtoGenerator.UI.ViewModels
+namespace DtoWriter.UI.ViewModels
 {
   public class Command : ICommand
   {

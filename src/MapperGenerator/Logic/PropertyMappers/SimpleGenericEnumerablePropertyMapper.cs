@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DtoGenerator.Logic.PropertyMappers
+﻿namespace DtoWriter.Logic.PropertyMappers
 {
   public class SimpleGenericEnumerablePropertyMapper : PropertyMapper
   {

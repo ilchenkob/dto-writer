@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.ComponentModel.Design;
-using DtoGenerator.UI.Views;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 
-namespace DtoGenerator
+namespace DtoWriter
 {
   /// <summary>
   /// Command handler

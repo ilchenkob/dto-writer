@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace DtoGenerator.UI.ViewModels.TreeNodes
+namespace DtoWriter.UI.ViewModels.TreeNodes
 {
   public class ClassNodeViewModel : NodeViewModel
   {

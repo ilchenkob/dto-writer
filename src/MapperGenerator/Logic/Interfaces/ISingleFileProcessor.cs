@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DtoGenerator.Logic.Models;
+using DtoWriter.Logic.Models;
 
-namespace DtoGenerator.Logic.Interfaces
+namespace DtoWriter.Logic.Interfaces
 {
   public interface ISingleFileProcessor
   {

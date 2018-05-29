@@ -1,10 +1,19 @@
 ﻿using System.Collections.Generic;
 
-namespace DtoGenerator.Logic
+namespace Dto.Analyzer
 {
   public class Constants
   {
     public const string DtoSuffix = "Dto";
+
+    public class Attribute
+    {
+      public const string JsonProperty = "JsonProperty";
+
+      public const string DataMember = "DataMember";
+
+      public const string DataContract = "DataContract";
+    }
 
     public class Using
     {

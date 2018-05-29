@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace DtoGenerator
+namespace DtoWriter
 {
   internal class Helper
   {

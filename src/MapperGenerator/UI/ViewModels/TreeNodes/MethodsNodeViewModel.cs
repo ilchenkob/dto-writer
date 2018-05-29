@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace DtoGenerator.UI.ViewModels.TreeNodes
+namespace DtoWriter.UI.ViewModels.TreeNodes
 {
   public class MethodsNodeViewModel : NodeViewModel
   {

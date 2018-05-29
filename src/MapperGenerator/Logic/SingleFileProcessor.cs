@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Dto.Analyzer;
+using DtoWriter.Logic.Interfaces;
+using DtoWriter.Logic.Models;
+using DtoWriter.Logic.PropertyMappers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
-using System.Threading.Tasks;
-using DtoGenerator.Logic.Interfaces;
-using DtoGenerator.Logic.Models;
-using DtoGenerator.Logic.PropertyMappers;
 
-namespace DtoGenerator.Logic
+namespace DtoWriter.Logic
 {
   public class SingleFileProcessor : ISingleFileProcessor
   {
@@ -39,8 +40,8 @@ namespace DtoGenerator.Logic
         .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))
         .AddSyntaxTrees(projectSyntaxTrees.Union(new[] {selectedSyntaxTree}));
       var semanticModel = compilation.GetSemanticModel(selectedSyntaxTree);
-
-      return new FileInfo
+      
+      var result = new FileInfo
       {
         ModelNamespace = namespaceTitle,
         Namespace = $"{namespaceTitle}.{Constants.DtoSuffix}",
@@ -48,10 +49,11 @@ namespace DtoGenerator.Logic
         {
           Name = classNode.Identifier.ValueText,
           Properties = classNode.DescendantNodes()
-                        .OfType<PropertyDeclarationSyntax>()
-                        .Select(prop => getPropertyInfo(prop, semanticModel)).ToList()
+            .OfType<PropertyDeclarationSyntax>()
+            .Select(prop => getPropertyInfo(prop, semanticModel)).ToList()
         }).ToList()
       };
+      return result;
     }
 
     private PropertyInfo getPropertyInfo(PropertyDeclarationSyntax node, SemanticModel semanticModel)

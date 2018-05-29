@@ -1,4 +1,4 @@
-﻿namespace DtoGenerator.UI.ViewModels
+﻿namespace DtoWriter.UI.ViewModels
 {
   public class LoadingViewModel : BaseViewModel
   {

@@ -1,14 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using DtoGenerator.Logic.Interfaces;
-using DtoGenerator.Logic.Models;
-using DtoGenerator.Logic.PropertyMappers;
+using Dto.Analyzer;
+using DtoWriter.Logic.Interfaces;
+using DtoWriter.Logic.Models;
+using DtoWriter.Logic.PropertyMappers;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace DtoGenerator.Logic
+namespace DtoWriter.Logic
 {
   public class CodeGenerator : ICodeGenerator
   { 
@@ -22,12 +23,7 @@ namespace DtoGenerator.Logic
                                           .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
         if (model.NeedDataMemberPropertyAttribute)
-          dtoDeclaration =
-            dtoDeclaration.AddAttributeLists(new []
-            {
-              SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
-                SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("DataContract"))))
-            });
+          dtoDeclaration = dtoDeclaration.AddDataContractAttribute();
 
         var fromModelFieldsMapping = new StringBuilder("\n");
         var toModelFieldsMapping = new StringBuilder("\n");
@@ -111,32 +107,10 @@ namespace DtoGenerator.Logic
           setAccessor);
 
       if (needDataMemberAttribute)
-        propertyDeclaration = propertyDeclaration.AddAttributeLists(new[]
-        {
-          SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
-            SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("DataMember"))))
-        });
+        propertyDeclaration = propertyDeclaration.AddDataMemberAttribute();
 
       if (needJsonPropAttribute)
-        propertyDeclaration = propertyDeclaration.AddAttributeLists(new[]
-        {
-          SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(
-              SyntaxFactory.Attribute(SyntaxFactory.IdentifierName("JsonProperty"))
-                .WithArgumentList(
-                  SyntaxFactory.AttributeArgumentList(
-                    SyntaxFactory.SingletonSeparatedList(
-                      SyntaxFactory.AttributeArgument(
-                        SyntaxFactory.LiteralExpression(
-                          SyntaxKind.StringLiteralExpression,
-                          SyntaxFactory.Literal(prop.Name.ToLowerCamelCase())
-                        )
-                      )
-                    )
-                  )
-                )
-            )
-          )
-        });
+        propertyDeclaration = propertyDeclaration.AddJsonPropertyAttribute();
 
       return propertyDeclaration;
     }

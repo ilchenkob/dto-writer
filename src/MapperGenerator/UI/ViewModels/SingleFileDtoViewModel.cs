@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
-using DtoGenerator.Logic;
-using DtoGenerator.Logic.Interfaces;
-using DtoGenerator.Logic.Models;
-using DtoGenerator.UI.ViewModels.TreeNodes;
+using Dto.Analyzer;
+using DtoWriter.Logic.Interfaces;
+using DtoWriter.Logic.Models;
+using DtoWriter.UI.ViewModels.TreeNodes;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
+using Task = System.Threading.Tasks.Task;
 
-namespace DtoGenerator.UI.ViewModels
+namespace DtoWriter.UI.ViewModels
 {
   public class SingleFileDtoViewModel : BaseViewModel
   {
@@ -141,11 +143,14 @@ namespace DtoGenerator.UI.ViewModels
       var modelFileDirectory = Path.GetDirectoryName(selectedFilePath);
       if (!string.IsNullOrWhiteSpace(modelFileDirectory))
         modelFileDirectory = modelFileDirectory.Remove(0, selectedProject.Path.Length);
-      
-      Dispatcher.CurrentDispatcher.Invoke(() => OutputFilePath = $"{modelFileDirectory}\\{modelFileName}{Constants.DtoSuffix}.cs");
+
+      await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+      OutputFilePath = $"{modelFileDirectory}\\{modelFileName}{Constants.DtoSuffix}.cs";
 
       FileInfo = await _fileProcessor.Analyze(selectedFilePath, allProjectSourcesExceptSelected, onLoadingProgressChanged);
-      Dispatcher.CurrentDispatcher.Invoke(() => DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo));
+
+      await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+      DtoFileContent = _codeGenerator.GenerateSourcecode(FileInfo);
 
       if (FileInfo?.Classes != null)
       {
@@ -161,18 +166,18 @@ namespace DtoGenerator.UI.ViewModels
           classNode.AddProperties(classItem.Properties != null
             ? classItem.Properties.Select(p => new NodeViewModel(p.Name, state => propertyStateChanged(p, state)))
             : new List<NodeViewModel>());
-          Dispatcher.CurrentDispatcher.Invoke(() => SyntaxTreeItems.Add(classNode));
+
+          await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+          SyntaxTreeItems.Add(classNode);
         }
       }
 
-      Dispatcher.CurrentDispatcher.Invoke(() =>
-      {
-        NotifyPropertyChanged(() => ProjectNames);
-        NotifyPropertyChanged(() => DtoNamespace);
-        LoadingProgress.Value = LoadingProgress.MaxValue;
-        IsSyntaxTreeReady = true;
-        SyntaxTreeReady?.Invoke();
-      });
+      await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+      NotifyPropertyChanged(() => ProjectNames);
+      NotifyPropertyChanged(() => DtoNamespace);
+      LoadingProgress.Value = LoadingProgress.MaxValue;
+      IsSyntaxTreeReady = true;
+      SyntaxTreeReady?.Invoke();
     }
 
     private void createExecute()

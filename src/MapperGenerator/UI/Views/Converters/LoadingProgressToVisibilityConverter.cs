@@ -2,9 +2,9 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using DtoGenerator.UI.ViewModels;
+using DtoWriter.UI.ViewModels;
 
-namespace DtoGenerator.UI.Views.Converters
+namespace DtoWriter.UI.Views.Converters
 {
   public class LoadingProgressToVisibilityConverter : IValueConverter
   {

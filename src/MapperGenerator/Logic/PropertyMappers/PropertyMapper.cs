@@ -1,4 +1,4 @@
-﻿namespace DtoGenerator.Logic.PropertyMappers
+﻿namespace DtoWriter.Logic.PropertyMappers
 {
   public abstract class PropertyMapper
   {
