@@ -19,12 +19,18 @@ namespace Dto.Writer.UI.Views
       InitializeComponent();
 
       _viewModel = viewModel;
-      _viewModel.SyntaxTreeReady = () => expandAllTreeNodes(tree);
+      _viewModel.PropertyChanged += (sender, eventArgs) =>
+      {
+        if (eventArgs.PropertyName.Equals(nameof(_viewModel.SyntaxTreeItems)))
+        {
+          expandAllTreeNodes(tree);
+        }
+      };
       DataContextChanged += (s, e) =>
       {
-        if (_viewModel.IsSyntaxTreeReady)
+        if (_viewModel.SyntaxTreeItems != null && _viewModel.SyntaxTreeItems.Count > 0)
         {
-          Task.Delay(400).ContinueWith(t => Application.Current.Dispatcher.Invoke(() => expandAllTreeNodes(tree)));
+          expandAllTreeNodes(tree);
         }
       };
       DataContext = viewModel;
@@ -55,14 +61,15 @@ namespace Dto.Writer.UI.Views
       setNodeState(sender, false);
     }
 
-    private void expandAllTreeNodes(ItemsControl items)
+    private async void expandAllTreeNodes(ItemsControl control)
     {
-      foreach (var obj in items.Items)
+      await Task.Delay(400).ConfigureAwait(false);
+      foreach (var obj in control.Items)
       {
-        var childControl = items.ItemContainerGenerator.ContainerFromItem(obj);
+        var childControl = control.ItemContainerGenerator.ContainerFromItem(obj);
         if (childControl is TreeViewItem item)
         {
-          item.ExpandSubtree();
+          Application.Current.Dispatcher.Invoke(() => item.ExpandSubtree());
         }
       }
     }

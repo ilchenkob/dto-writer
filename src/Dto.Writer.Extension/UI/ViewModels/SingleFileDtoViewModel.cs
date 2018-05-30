@@ -79,10 +79,6 @@ namespace Dto.Writer.UI.ViewModels
 
     public ObservableCollection<NodeViewModel> SyntaxTreeItems { get; private set; }
 
-    public bool IsSyntaxTreeReady { get; private set; }
-
-    public Action SyntaxTreeReady { get; set; }
-
     public ICommand CreateCommand { get; }
 
     public bool IsCreateEnabled => !string.IsNullOrWhiteSpace(OutputFilePath) &&
@@ -170,13 +166,12 @@ namespace Dto.Writer.UI.ViewModels
         SyntaxTreeItems = new ObservableCollection<NodeViewModel>(syntaxTreeItems);
         OutputFilePath = $"{modelFileDirectory}\\{modelFileName}{Constants.DtoSuffix}.cs";
 
-        NotifyPropertyChanged(() => DtoNamespace);
-        NotifyPropertyChanged(() => ProjectNames);
-
         LoadingProgress.Value = LoadingProgress.MaxValue;
+
+        NotifyPropertyChanged(() => DtoNamespace);
+        NotifyPropertyChanged(() => SyntaxTreeItems);
+        NotifyPropertyChanged(() => ProjectNames);
         NotifyPropertyChanged(() => LoadingProgress);
-        IsSyntaxTreeReady = true;
-        SyntaxTreeReady?.Invoke();
       });
     }
 

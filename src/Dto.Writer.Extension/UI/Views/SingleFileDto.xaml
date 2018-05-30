@@ -55,7 +55,7 @@
                       Margin="0,0,8,0"
                       VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
           <TextBlock Background="White" Padding="6" Text="{Binding DtoFileContent, Mode=TwoWay}"></TextBlock>
-        </ScrollViewer>
+      </ScrollViewer>
       </Grid>
       <Grid Grid.Row="3" Margin="0,4">
         <Grid.RowDefinitions>
