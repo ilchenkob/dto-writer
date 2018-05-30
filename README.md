@@ -14,6 +14,8 @@ During DTO creation you can select which model properties should be skipped, do 
 and / or
 - **DataContract** + **DataMember** attributes from **System.Runtime.Serialization** assembly.
 
+These attributes can be added later. You can find code fix suggestions for adding/removing attributes (they will be offered when cursor is placed at DTO class name or one of it's property).
+
 It's already available at [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=VitaliiIlchenko.DtoCreator)
 
 #### Example

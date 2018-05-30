@@ -41,16 +41,15 @@ namespace Dto.Analyzer.Providers
         return;
       }
 
-      if (token.Parent is ClassDeclarationSyntax classDeclaration)
+      if (token.Parent is ClassDeclarationSyntax classDeclaration && classDeclaration.IsDto())
       {
-        if (classDeclaration.IsDto() &&
-            classDeclaration.DescendantNodes().OfType<PropertyDeclarationSyntax>().Any(p => !p.ContainsAttribute(AttributeName)))
+        var classProperties = classDeclaration.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+        if (classProperties.Any(p => !p.HasAttribute(AttributeName)))
         {
           context.RegisterRefactoring(CodeAction.Create(AddAttributeActionTitle,
             t => AddAttributesClassAction(t, context.Document, root, classDeclaration)));
         }
-        if (classDeclaration.IsDto() &&
-            classDeclaration.DescendantNodes().OfType<PropertyDeclarationSyntax>().Any(p => p.ContainsAttribute(AttributeName)))
+        if (classProperties.Any(p => p.HasAttribute(AttributeName)))
         {
           context.RegisterRefactoring(CodeAction.Create(RemoveAttributeActionTitle,
             t => RemoveAttributesClassAction(t, context.Document, root, classDeclaration)));
@@ -58,38 +57,61 @@ namespace Dto.Analyzer.Providers
       }
       else if (token.Parent is PropertyDeclarationSyntax propertyDeclaration)
       {
-        if (propertyDeclaration.Parent is ClassDeclarationSyntax parentClass)
+        if (propertyDeclaration.Parent is ClassDeclarationSyntax parentClass && parentClass.IsDto())
         {
-          if (parentClass.IsDto())
+          if (propertyDeclaration.HasAttribute(AttributeName))
           {
-            if (propertyDeclaration.ContainsAttribute(AttributeName))
-            {
-              context.RegisterRefactoring(CodeAction.Create(RemoveAttributeActionTitle,
-                t => RemoveAttributesPropertyAction(t, context.Document, root, propertyDeclaration)));
-            }
-            else
-            {
-              context.RegisterRefactoring(CodeAction.Create(AddAttributeActionTitle,
-                t => AddAttributesPropertyAction(t, context.Document, root, propertyDeclaration)));
-            }
+            context.RegisterRefactoring(CodeAction.Create(RemoveAttributeActionTitle,
+              t => RemoveAttributesPropertyAction(t, context.Document, root, parentClass, propertyDeclaration)));
+          }
+          else
+          {
+            context.RegisterRefactoring(CodeAction.Create(AddAttributeActionTitle,
+              t => AddAttributesPropertyAction(t, context.Document, root, parentClass, propertyDeclaration)));
           }
         }
       }
     }
 
-    protected virtual Task<Document> AddAttributesClassAction(CancellationToken token, Document document, SyntaxNode root, ClassDeclarationSyntax classDeclaration)
+    protected virtual SyntaxNode OnPropertyAttributeAdded(
+      SyntaxNode root,
+      ClassDeclarationSyntax classDeclaration)
+    {
+      return root;
+    }
+
+    protected virtual SyntaxNode OnPropertyAttributeRemoved(
+      SyntaxNode root,
+      ClassDeclarationSyntax classDeclaration)
+    {
+      return root;
+    }
+
+    protected virtual Task<Document> AddAttributesClassAction(
+      CancellationToken token,
+      Document document,
+      SyntaxNode root,
+      ClassDeclarationSyntax classDeclaration)
     {
       if (token.IsCancellationRequested)
         return Task.FromResult(document);
 
       var newRoot = root.ReplaceNodes(
-        classDeclaration.DescendantNodes().OfType<PropertyDeclarationSyntax>().Where(p => !p.ContainsAttribute(AttributeName)),
+        classDeclaration.DescendantNodes().OfType<PropertyDeclarationSyntax>().Where(p => !p.HasAttribute(AttributeName)),
         (originalProp, newProp) => AddAttribute(originalProp));
 
-      return Task.FromResult(document.WithSyntaxRoot(newRoot));
+      var newClassDeclaration = newRoot.DescendantNodes()
+                              .OfType<ClassDeclarationSyntax>()
+                              .First(c => c.Identifier.ValueText.Equals(classDeclaration.Identifier.ValueText));
+
+      return Task.FromResult(document.WithSyntaxRoot(OnPropertyAttributeAdded(newRoot, newClassDeclaration)));
     }
 
-    protected virtual Task<Document> RemoveAttributesClassAction(CancellationToken token, Document document, SyntaxNode root, ClassDeclarationSyntax classDeclaration)
+    protected virtual Task<Document> RemoveAttributesClassAction(
+      CancellationToken token,
+      Document document,
+      SyntaxNode root,
+      ClassDeclarationSyntax classDeclaration)
     {
       if (token.IsCancellationRequested)
         return Task.FromResult(document);
@@ -98,25 +120,45 @@ namespace Dto.Analyzer.Providers
         classDeclaration.DescendantNodes().OfType<PropertyDeclarationSyntax>(),
         (originalProp, newProp) => originalProp.RemoveAttribute(AttributeName));
 
-      return Task.FromResult(document.WithSyntaxRoot(newRoot));
+      var newClassDeclaration = newRoot.DescendantNodes()
+                              .OfType<ClassDeclarationSyntax>()
+                              .First(c => c.Identifier.ValueText.Equals(classDeclaration.Identifier.ValueText));
+
+      return Task.FromResult(document.WithSyntaxRoot(OnPropertyAttributeRemoved(newRoot, newClassDeclaration)));
     }
 
-    protected virtual Task<Document> AddAttributesPropertyAction(CancellationToken token, Document document, SyntaxNode root, PropertyDeclarationSyntax propertyDeclaration)
+    protected virtual Task<Document> AddAttributesPropertyAction(
+      CancellationToken token,
+      Document document,
+      SyntaxNode root,
+      ClassDeclarationSyntax classDeclaration,
+      PropertyDeclarationSyntax propertyDeclaration)
     {
       if (token.IsCancellationRequested)
         return Task.FromResult(document);
 
       var newRoot = root.ReplaceNode(propertyDeclaration, AddAttribute(propertyDeclaration));
-      return Task.FromResult(document.WithSyntaxRoot(newRoot));
+      var newClassDeclaration = newRoot.DescendantNodes()
+                              .OfType<ClassDeclarationSyntax>()
+                              .First(c => c.Identifier.ValueText.Equals(classDeclaration.Identifier.ValueText));
+      return Task.FromResult(document.WithSyntaxRoot(OnPropertyAttributeAdded(newRoot, newClassDeclaration)));
     }
 
-    protected virtual Task<Document> RemoveAttributesPropertyAction(CancellationToken token, Document document, SyntaxNode root, PropertyDeclarationSyntax propertyDeclaration)
+    protected virtual Task<Document> RemoveAttributesPropertyAction(
+      CancellationToken token,
+      Document document,
+      SyntaxNode root,
+      ClassDeclarationSyntax classDeclaration,
+      PropertyDeclarationSyntax propertyDeclaration)
     {
       if (token.IsCancellationRequested)
         return Task.FromResult(document);
 
       var newRoot = root.ReplaceNode(propertyDeclaration, propertyDeclaration.RemoveAttribute(AttributeName));
-      return Task.FromResult(document.WithSyntaxRoot(newRoot));
+      var newClassDeclaration = newRoot.DescendantNodes()
+                              .OfType<ClassDeclarationSyntax>()
+                              .First(c => c.Identifier.ValueText.Equals(classDeclaration.Identifier.ValueText));
+      return Task.FromResult(document.WithSyntaxRoot(OnPropertyAttributeRemoved(newRoot, newClassDeclaration)));
     }
   }
 }

@@ -12,7 +12,7 @@ namespace Dto.Analyzer
     {
       return $"{str[0].ToString().ToLower()}{str.Substring(1)}";
     }
-
+    
     public static ClassDeclarationSyntax AddDataContractAttribute(this ClassDeclarationSyntax classDeclaration)
     {
       return classDeclaration.AddAttributeLists(new[]
@@ -55,14 +55,28 @@ namespace Dto.Analyzer
       });
     }
 
+    public static ClassDeclarationSyntax RemoveAttribute(this ClassDeclarationSyntax classDeclaration, string attributeName)
+    {
+      return (ClassDeclarationSyntax)new AttributeRemover(attributeName).Visit(classDeclaration);
+    }
+
     public static PropertyDeclarationSyntax RemoveAttribute(this PropertyDeclarationSyntax prop, string attributeName)
     {
       return (PropertyDeclarationSyntax)new AttributeRemover(attributeName).Visit(prop);
     }
 
-    public static bool ContainsAttribute(this PropertyDeclarationSyntax prop, string attributeName)
+    public static bool HasAttribute(this PropertyDeclarationSyntax prop, string attributeName)
     {
       return prop.DescendantNodes()
+        .OfType<AttributeListSyntax>()
+        .Any(l => l.Attributes.Any(a =>
+          a.Name.NormalizeWhitespace().ToFullString()
+            .Equals(attributeName)));
+    }
+
+    public static bool HasAttribute(this ClassDeclarationSyntax classDeclaration, string attributeName)
+    {
+      return classDeclaration.DescendantNodes()
         .OfType<AttributeListSyntax>()
         .Any(l => l.Attributes.Any(a =>
           a.Name.NormalizeWhitespace().ToFullString()
@@ -87,15 +101,17 @@ namespace Dto.Analyzer
       {
         var propAttribute =
           node.Attributes.FirstOrDefault(a => a.Name.NormalizeWhitespace().ToFullString().Equals(_attributeName));
-        if (node.Parent is PropertyDeclarationSyntax && propAttribute != null)
+        if (propAttribute != null)
         {
-          if (node.Attributes.Count == 1)
+          if (node.Parent is PropertyDeclarationSyntax || node.Parent is ClassDeclarationSyntax)
           {
-            return null;
-          }
+            if (node.Attributes.Count == 1)
+              return null;
 
-          return node.RemoveNode(propAttribute, SyntaxRemoveOptions.KeepNoTrivia);
+            return node.RemoveNode(propAttribute, SyntaxRemoveOptions.KeepNoTrivia);
+          }
         }
+
         return base.VisitAttributeList(node);
       }
     }
