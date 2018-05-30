@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dto.Writer.Extension", "Dto.Writer.Extension\Dto.Writer.Extension.csproj", "{8F9F0BB8-EF3D-42DF-8048-2711BF223C2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dto.Analyzer", "Dto.Analyzer\Dto.Analyzer.csproj", "{43A2F64F-F176-49AF-A7FC-712F210055ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F9F0BB8-EF3D-42DF-8048-2711BF223C2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F9F0BB8-EF3D-42DF-8048-2711BF223C2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F9F0BB8-EF3D-42DF-8048-2711BF223C2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F9F0BB8-EF3D-42DF-8048-2711BF223C2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43A2F64F-F176-49AF-A7FC-712F210055ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43A2F64F-F176-49AF-A7FC-712F210055ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43A2F64F-F176-49AF-A7FC-712F210055ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43A2F64F-F176-49AF-A7FC-712F210055ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C1533A15-79DD-4954-B53D-69EE1AACEBF1}
+	EndGlobalSection
+EndGlobal

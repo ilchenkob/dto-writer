@@ -55,24 +55,9 @@ namespace Dto.Analyzer
       });
     }
 
-    public static PropertyDeclarationSyntax RemoveDataMemberAttribute(this PropertyDeclarationSyntax prop)
+    public static PropertyDeclarationSyntax RemoveAttribute(this PropertyDeclarationSyntax prop, string attributeName)
     {
-      return (PropertyDeclarationSyntax)new AttributeRemover(Constants.Attribute.DataMember).Visit(prop);
-    }
-
-    public static PropertyDeclarationSyntax RemoveJsonPropertyAttribute(this PropertyDeclarationSyntax prop)
-    {
-      return (PropertyDeclarationSyntax)new AttributeRemover(Constants.Attribute.JsonProperty).Visit(prop);
-    }
-
-    public static bool ContainsDataMemberAttribute(this PropertyDeclarationSyntax prop)
-    {
-      return prop.ContainsAttribute(Constants.Attribute.DataMember);
-    }
-
-    public static bool ContainsJsonAttribute(this PropertyDeclarationSyntax prop)
-    {
-      return prop.ContainsAttribute(Constants.Attribute.JsonProperty);
+      return (PropertyDeclarationSyntax)new AttributeRemover(attributeName).Visit(prop);
     }
 
     public static bool ContainsAttribute(this PropertyDeclarationSyntax prop, string attributeName)
