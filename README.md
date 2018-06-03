@@ -18,6 +18,8 @@ These attributes can be added later. You can find code fix suggestions for addin
 
 It's already available at [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=VitaliiIlchenko.DtoCreator)
 
+You can find **change log [here](https://github.com/ilchenkob/dto-writer/blob/master/CHANGELOG.md)**
+
 #### Example
 
 Source file content:
