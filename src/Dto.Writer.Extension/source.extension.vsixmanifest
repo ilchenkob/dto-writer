@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="MapperGenerator.1bd4abe3-2c61-487c-9368-e554a21120e7" Version="2.3" Language="en-US" Publisher="Vitalii Ilchenko" />
+        <Identity Id="MapperGenerator.1bd4abe3-2c61-487c-9368-e554a21120e7" Version="2.4" Language="en-US" Publisher="Vitalii Ilchenko" />
         <DisplayName>DTO Writer</DisplayName>
         <Description xml:space="preserve">Simple code generation tool for DTO-classes creation. Gives you ability to create DTO-classes for your models in three clicks.
 </Description>

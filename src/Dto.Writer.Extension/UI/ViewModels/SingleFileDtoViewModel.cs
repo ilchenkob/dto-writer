@@ -71,9 +71,13 @@ namespace Dto.Writer.UI.ViewModels
         }
 
         _selectedProjectName = value;
+        SelectedProjectPath = newProject.Path;
         NotifyPropertyChanged(() => SelectedProjectName);
+        NotifyPropertyChanged(() => SelectedProjectPath);
       }
     }
+
+    public string SelectedProjectPath { get; private set; }
 
     public List<string> ProjectNames { get; }  
 
@@ -181,7 +185,10 @@ namespace Dto.Writer.UI.ViewModels
       var selectedProject = _allSolutionProjects.First(p =>
         p.Name.Equals(SelectedProjectName, StringComparison.InvariantCultureIgnoreCase));
 
-      var dtoFilePath = Path.Combine(selectedProject.Path, OutputFilePath.TrimStart('\\'));
+      var dtoFilePath = OutputFilePath.Contains(":") // if it's absolute path
+                          ? OutputFilePath           // then leave it as is
+                          : Path.Combine(selectedProject.Path, OutputFilePath.TrimStart('\\'));
+
       while (!saveCompleted)
       {
         try
