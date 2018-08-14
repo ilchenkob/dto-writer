@@ -1,6 +1,10 @@
 ## Changelog
 All notable changes to this project will be documented in this file.
 
+#### 2.5 - 2018-08-14
+##### Added
+* Solution folders support (DTO Writer can work with projects which are placed in solution folders)
+
 #### 2.4 - 2018-06-04
 ##### Changed
 * UI for inputting output file path. Now you can click *'Browse'* button and select destination folder for DTO file instead of writing this path manually

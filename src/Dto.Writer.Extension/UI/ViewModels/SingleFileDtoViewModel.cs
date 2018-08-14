@@ -42,8 +42,8 @@ namespace Dto.Writer.UI.ViewModels
         MaxValue = sourceFiles.Count * 2
       };
 
-      ProjectNames = allSolutionProjects.Select(p => p.Name).ToList();
-      SelectedProjectName = allSolutionProjects.FirstOrDefault(p => p.IsSelected)?.Name;
+      ProjectNames = allSolutionProjects.Select(p => p.DisplayName).ToList();
+      SelectedProjectName = allSolutionProjects.FirstOrDefault(p => p.IsSelected)?.DisplayName;
 
       SyntaxTreeItems = new ObservableCollection<NodeViewModel>();
       CreateCommand = new Command(createExecute, () => IsCreateEnabled);
@@ -61,9 +61,9 @@ namespace Dto.Writer.UI.ViewModels
       set
       {
         var prevProject = _allSolutionProjects.FirstOrDefault(p =>
-          p.Name.Equals(_selectedProjectName, StringComparison.InvariantCultureIgnoreCase));
+          p.DisplayName.Equals(_selectedProjectName, StringComparison.InvariantCultureIgnoreCase));
         var newProject = _allSolutionProjects.FirstOrDefault(p =>
-          p.Name.Equals(value, StringComparison.InvariantCultureIgnoreCase));
+          p.DisplayName.Equals(value, StringComparison.InvariantCultureIgnoreCase));
 
         if (prevProject != null && newProject != null && DtoNamespace.Contains(prevProject.DefaultNamespace))
         {
@@ -183,7 +183,7 @@ namespace Dto.Writer.UI.ViewModels
     {
       var saveCompleted = false;
       var selectedProject = _allSolutionProjects.First(p =>
-        p.Name.Equals(SelectedProjectName, StringComparison.InvariantCultureIgnoreCase));
+        p.DisplayName.Equals(SelectedProjectName, StringComparison.InvariantCultureIgnoreCase));
 
       var dtoFilePath = OutputFilePath.Contains(":") // if it's absolute path
                           ? OutputFilePath           // then leave it as is
@@ -194,7 +194,7 @@ namespace Dto.Writer.UI.ViewModels
         try
         {
           File.WriteAllText(dtoFilePath, DtoFileContent);
-          _dtoFileCreated?.Invoke(selectedProject.Name, dtoFilePath);
+          _dtoFileCreated?.Invoke(selectedProject.DisplayName, dtoFilePath);
           saveCompleted = true;
         }
         catch (DirectoryNotFoundException)

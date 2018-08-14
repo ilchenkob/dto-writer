@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,9 +12,14 @@ namespace Dto.Writer
 {
   public class SingleFileCommandExecutor
   {
+    private const string ProjectFolderID = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}";
+
     private readonly EnvDTE80.DTE2 _ide;
+    private readonly IDictionary<string, Project> _projects;
+
     public SingleFileCommandExecutor(EnvDTE80.DTE2 ide)
     {
+      _projects = new Dictionary<string, Project>();
       _ide = ide ?? throw new NullReferenceException("IDE");
     }
 
@@ -23,6 +29,8 @@ namespace Dto.Writer
       var filePath = selectedItem.Properties.Item("FullPath").Value.ToString();
       if (!string.IsNullOrWhiteSpace(filePath))
       {
+        _projects.Clear();
+
         var selectedProject = selectedItem.ContainingProject;
         var allSources = getAllProjectItems(selectedProject.ProjectItems)
           .Where(v => v.Name.Contains(".cs"))
@@ -38,7 +46,7 @@ namespace Dto.Writer
           {
             try
             {
-              var dtoProject = getProjectByName(projectName);
+              var dtoProject = _projects[projectName];
               dtoProject.ProjectItems.AddFromFile(dtoFilePath);
             }
             catch (Exception ex)
@@ -99,12 +107,12 @@ namespace Dto.Writer
 
         if (item.SubProject != null)
         {
-          foreach (ProjectItem childItem in getAllProjectItems(item.SubProject.ProjectItems))
+          foreach (var childItem in getAllProjectItems(item.SubProject.ProjectItems))
             yield return childItem;
         }
         else
         {
-          foreach (ProjectItem childItem in getAllProjectItems(item.ProjectItems))
+          foreach (var childItem in getAllProjectItems(item.ProjectItems))
             yield return childItem;
         }
       }
@@ -112,43 +120,55 @@ namespace Dto.Writer
 
     private IReadOnlyCollection<Logic.Models.Project> getAllSolutionProjects(Project selectedProject)
     {
-      var selectedProjectName = selectedProject.Name;
-      var allProjects = new List<Logic.Models.Project>();
-      for (var i = 1; i < _ide.Solution.Projects.Count + 1; i++)
-      {
-        try
-        {
-          var project = _ide.Solution.Projects.Item(i);
-          if (!string.IsNullOrWhiteSpace(project.Name) && !string.IsNullOrWhiteSpace(project.FullName))
-            allProjects.Add(new Logic.Models.Project
-            {
-              Name = project.Name,
-              Path = project.FullName.Remove(project.FullName.LastIndexOf('\\')),
-              DefaultNamespace = project.Properties.Item("DefaultNamespace").Value.ToString(),
-              IsSelected = project.Name.Equals(selectedProjectName, StringComparison.InvariantCultureIgnoreCase)
-            });
-        }
-        catch (Exception e)
-        {
-          // TODO: handle unexpected cases
-        }
-      }
-
-      return new ReadOnlyCollection<Logic.Models.Project>(allProjects);
+      var projects = getProjects(_ide.Solution.Projects, selectedProject.UniqueName);
+      return new ReadOnlyCollection<Logic.Models.Project>(projects.OrderBy(p => p.Name).ToList());
     }
 
-    private Project getProjectByName(string name)
+    private List<Logic.Models.Project> getProjects(IEnumerable projects, string selectedProjectName, string parentFolder = "")
     {
-      for (var i = 1; i < _ide.Solution.Projects.Count + 1; i++)
+      var result = new List<Logic.Models.Project>();
+      foreach (var item in projects)
       {
-        var project = _ide.Solution.Projects.Item(i);
-        if (project.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase))
+        var currentProject = item is ProjectItem pi ? pi.Object as Project : item as Project;
+        result.AddRange(processProjectItem(currentProject, selectedProjectName, parentFolder));
+      }
+      return result;
+    }
+
+    private IEnumerable<Logic.Models.Project> processProjectItem(Project projectItem, string selectedProjectName, string parentFolder = "")
+    {
+      try
+      {
+        if (projectItem.Kind.Equals(ProjectFolderID))
         {
-          return project;
+          return getProjects(projectItem.ProjectItems, selectedProjectName, $"{parentFolder}{projectItem.Name}\\");
+        }
+        if (!string.IsNullOrWhiteSpace(projectItem.Name) && !string.IsNullOrWhiteSpace(projectItem.FullName))
+        {
+          var projectDisplayName = string.IsNullOrWhiteSpace(parentFolder)
+                                        ? projectItem.Name
+                                        : $"{parentFolder}{projectItem.Name}";
+          _projects.Add(projectDisplayName, projectItem);
+
+          return new List<Logic.Models.Project>
+          {
+            new Logic.Models.Project
+            {
+              DisplayName = projectDisplayName,
+              Name = projectItem.Name,
+              Path = projectItem.FullName.Remove(projectItem.FullName.LastIndexOf('\\')),
+              DefaultNamespace = projectItem.Properties.Item("DefaultNamespace").Value.ToString(),
+              IsSelected = projectItem.UniqueName.Equals(selectedProjectName, StringComparison.InvariantCultureIgnoreCase)
+            }
+          };
         }
       }
+      catch (Exception e)
+      {
+        // TODO: handle unexpected cases
+      }
 
-      return null;
+      return new List<Logic.Models.Project>();
     }
   }
 }
