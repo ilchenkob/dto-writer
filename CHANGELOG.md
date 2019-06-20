@@ -1,6 +1,10 @@
 ## Changelog
 All notable changes to this project will be documented in this file.
 
+#### 2.6 - 2019-06-20
+##### Added
+* Support of Visual Studio 2019
+
 #### 2.5 - 2018-08-14
 ##### Added
 * Solution folders support (DTO Writer can work with projects which are placed in solution folders)

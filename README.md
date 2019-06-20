@@ -1,5 +1,5 @@
 ## DTO Writer
-### Extension for Visual Studio 2017
+### Extension for Visual Studio 2017 and 2019
 
 Simple code generation tool for DTO-classes creation.
 You can easily create DTO-classes for your models in three clicks:
