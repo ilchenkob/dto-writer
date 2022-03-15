@@ -130,7 +130,10 @@ namespace Dto.Writer
       foreach (var item in projects)
       {
         var currentProject = item is ProjectItem pi ? pi.Object as Project : item as Project;
-        result.AddRange(processProjectItem(currentProject, selectedProjectName, parentFolder));
+        if (currentProject != null)
+        {
+	        result.AddRange(processProjectItem(currentProject, selectedProjectName, parentFolder));
+        }
       }
       return result;
     }

@@ -33,7 +33,14 @@ namespace Dto.Writer.Logic
       var selectedFileContent = await Helper.ReadFile(selectedFilePath);
       var selectedSyntaxTree = CSharpSyntaxTree.ParseText(selectedFileContent);
       var syntaxRoot = await selectedSyntaxTree.GetRootAsync();
-      var namespaceTitle = syntaxRoot.DescendantNodes().OfType<NamespaceDeclarationSyntax>().First().Name.ToString();
+      var namespaceTitle = syntaxRoot.DescendantNodes().OfType<NamespaceDeclarationSyntax>().FirstOrDefault()?.Name?.ToString();
+      if (namespaceTitle is null)
+      {
+	      namespaceTitle = syntaxRoot.DescendantNodes().OfType<FileScopedNamespaceDeclarationSyntax>().FirstOrDefault()?.Name?.ToString();
+		      //.FirstOrDefault(c => c.ToString().Contains("FileScopedNamespaceDeclaration"));
+	      //namespaceTitle = syntaxRoot.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.f>().FirstOrDefault()
+	      // .Name.ToString();
+      }
       var classes = syntaxRoot.DescendantNodes().OfType<ClassDeclarationSyntax>();
 
       var compilation = CSharpCompilation.Create(namespaceTitle)
